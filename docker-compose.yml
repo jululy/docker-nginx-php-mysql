@@ -1,33 +1,36 @@
-version: '3'
+version: '2'
 services:
     web:
-        image: nginx
+        image: nginx:alpine
+        privileged: true
         volumes:
             - "./etc/nginx/default.conf:/etc/nginx/conf.d/default.conf"
             - "./etc/ssl:/etc/ssl"
             - "./web:/var/www/html"
             - "./etc/nginx/default.template.conf:/etc/nginx/conf.d/default.template"
         ports:
-            - "8000:80"
+            - "9501:9501"
+            - "80:80"
             - "3000:443"
         environment:
             - NGINX_HOST=${NGINX_HOST}
-        command: /bin/bash -c "envsubst '$$NGINX_HOST' < /etc/nginx/conf.d/default.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
         restart: always
         depends_on:
             - php
             - mysqldb
     php:
-        image: nanoninja/php-fpm
+        build: ./image/php
         restart: always
+        privileged: true
         volumes:
             - "./etc/php/php.ini:/usr/local/etc/php/conf.d/php.ini"
             - "./web:/var/www/html"
     composer:
         image: "composer"
+        privileged: true
         volumes:
-            - "./web/app:/app"
-        command: install
+            - "./web/:/app"
+        command: /bin/bash -c "composer install && composer config repo.packagist composer https://packagist.phpcomposer.com && composer update"
     myadmin:
         image: phpmyadmin/phpmyadmin
         container_name: phpmyadmin
@@ -51,6 +54,7 @@ services:
             - MYSQL_USER=${MYSQL_USER}
             - MYSQL_PASSWORD=${MYSQL_PASSWORD}
         ports:
-            - "8989:3306"
+            - "3306:3306"
+        privileged: true
         volumes:
             - "./data/db/mysql:/var/lib/mysql"
