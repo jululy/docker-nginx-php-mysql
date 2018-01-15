@@ -12,5 +12,5 @@ RUN apt-get update && apt-get install -y \
 
 Run docker-php-ext-install  mcrypt pdo_mysql opcache mysqli
 
-RUN pecl install redis-3.1.4  swoole-1.9.23 &&\
-    docker-php-ext-enable redis	swoole
+RUN pecl install redis-3.1.4  swoole-1.9.23 rar-4.0.0 &&\
+    docker-php-ext-enable redis	swoole rar
